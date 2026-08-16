@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShaHab — Meal Plan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--surface:#141414;--card:#1a1a1a;--border:#252525;
+  --red:#e63946;--blue:#3a86ff;--green:#2ecc71;--gold:#f4a261;--gray:#666;
+  --white:#efefef;--muted:#666;--label:#999;
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+/* HERO */
+.hero{background:var(--surface);border-bottom:2px solid var(--red);padding:32px 20px 24px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'EAT';position:absolute;font-size:180px;font-weight:900;color:rgba(230,57,70,.04);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;letter-spacing:-4px}
+.hero-tag{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.hero h1{font-size:clamp(24px,6vw,52px);font-weight:900;letter-spacing:-1px;margin-bottom:6px;text-transform:uppercase}
+.hero h1 span{color:var(--red)}
+.hero-sub{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.macros{display:flex;justify-content:center;gap:2px;margin-top:20px;flex-wrap:wrap}
+.mac-chip{background:var(--card);border:1px solid var(--border);padding:10px 16px;text-align:center}
+.mac-chip:first-child{border-radius:6px 0 0 6px}
+.mac-chip:last-child{border-radius:0 6px 6px 0}
+.mac-val{font-size:20px;font-weight:900;color:var(--white);line-height:1}
+.mac-val span{font-size:12px;color:var(--red)}
+.mac-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* TABS */
+.tabs-outer{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border)}
+.tabs{display:flex;max-width:920px;margin:0 auto}
+.tab{flex:1;padding:12px 8px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:color .2s,border-color .2s;text-align:center}
+.tab:hover{color:var(--white)}
+.tab.active{color:var(--red);border-bottom-color:var(--red)}
+.tab .dot{width:5px;height:5px;border-radius:50%;margin:0 auto 4px;background:currentColor;opacity:.4}
+.tab.active .dot{opacity:1}
+
+/* MAIN */
+.main{max-width:920px;margin:0 auto;padding:24px 14px 60px}
+.panel{display:none}.panel.active{display:block}
+
+/* MODE HEADER */
+.mode-hdr{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.m-icon{font-size:52px;line-height:1;flex-shrink:0;opacity:.8}
+.m-info{flex:1;padding-top:4px}
+.m-pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.pill-a{background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.25)}
+.pill-b{background:rgba(58,134,255,.12);color:var(--blue);border:1px solid rgba(58,134,255,.25)}
+.m-name{font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.m-desc{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ALERT BOX */
+.alert{border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.6}
+.alert-red{background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);color:#f08088}
+.alert-green{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);color:#6edfa0}
+.alert-gold{background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.2);color:#f4c084}
+.alert b{color:var(--white)}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.meal-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.meal-head{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+.meal-time{font-size:13px;font-weight:700;color:var(--red);min-width:70px;letter-spacing:.5px}
+.meal-name{font-size:14px;font-weight:700;flex:1;text-transform:uppercase;letter-spacing:.3px}
+.meal-badge{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 9px;border-radius:20px}
+.b-green{background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.2)}
+.b-amber{background:rgba(244,162,97,.12);color:var(--gold);border:1px solid rgba(244,162,97,.2)}
+.b-purple{background:rgba(150,100,255,.12);color:#b88cff;border:1px solid rgba(150,100,255,.2)}
+.b-blue{background:rgba(58,134,255,.12);color:var(--blue);border:1px solid rgba(58,134,255,.2)}
+.b-red{background:rgba(230,57,70,.12);color:var(--red);border:1px solid rgba(230,57,70,.2)}
+.b-gray{background:rgba(100,100,100,.12);color:#999;border:1px solid rgba(100,100,100,.2)}
+.meal-body{padding:10px 14px}
+.food-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.food-row:last-child{border:none}
+.food-name{color:var(--white);flex:1}
+.food-supp{color:#b88cff;font-weight:500}
+.food-amt{color:var(--label);font-size:12px;margin-left:10px;flex-shrink:0}
+.meal-macros{display:flex;gap:12px;padding:8px 14px;background:rgba(255,255,255,.02);border-top:1px solid var(--border);flex-wrap:wrap}
+.mac-item{font-size:12px;color:var(--muted)}
+.mac-item b{color:var(--white);font-weight:700}
+.meal-note{font-size:12px;color:var(--muted);padding:8px 14px;background:rgba(255,255,255,.02);border-top:1px solid var(--border);line-height:1.5;font-style:italic}
+.meal-note .crit{color:var(--red);font-style:normal;font-weight:700}
+.meal-note .ok{color:var(--green);font-style:normal;font-weight:700}
+
+/* GYM BAR */
+.gym-bar{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.gym-dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0}
+.gym-text{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.gym-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* SUPP TABLE */
+.supp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:16px}
+.supp-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.supp-time{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.supp-item{display:flex;gap:8px;padding:4px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.supp-item:last-child{border:none}
+.supp-dot{width:5px;height:5px;border-radius:50%;background:#b88cff;flex-shrink:0;margin-top:6px}
+.supp-detail{flex:1}
+.supp-name{color:var(--white);font-weight:500}
+.supp-dose{color:var(--muted);font-size:12px}
+.supp-note-text{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic}
+
+/* RULES */
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.rule-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.rule-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.rule-item{font-size:13px;padding:2.5px 0;color:var(--label)}
+.rt-red{color:var(--red)}.rt-green{color:var(--green)}.rt-blue{color:var(--blue)}.rt-gold{color:var(--gold)}
+
+/* SUMMARY */
+.summary{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+.summary-item{font-size:13px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:10px}
+.summary-item:last-child{border:none}
+.s-icon{flex-shrink:0;width:20px}
+.s-text{flex:1;color:var(--label)}.s-text b{color:var(--white)}
+
+/* WEEK NOTE */
+.w-note{background:var(--surface);border:1px solid var(--border);border-radius:0 6px 6px 0;padding:11px 15px;font-size:12px;color:var(--label);line-height:1.6;margin-top:4px}
+.w-note b{color:var(--white)}
+.border-green{border-left:3px solid var(--green)}
+.border-blue{border-left:3px solid var(--blue)}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;color:var(--muted);font-size:11px;letter-spacing:1px;border-top:1px solid var(--border)}
+
+@media(max-width:520px){
+  .rules-grid{grid-template-columns:1fr}
+  .supp-grid{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .macros{gap:1px}
+  .mac-chip{padding:8px 10px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Nutrition Plan · 2026</div>
+  <h1>Sha<span>hab</span></h1>
+  <div class="hero-sub">75kg → 85kg · Lean Muscle · Powerlifter · Kathmandu</div>
+  <div class="macros">
+    <div class="mac-chip"><div class="mac-val">~3150<span>kcal</span></div><div class="mac-label">Daily</div></div>
+    <div class="mac-chip"><div class="mac-val">191<span>g</span></div><div class="mac-label">Protein</div></div>
+    <div class="mac-chip"><div class="mac-val">415<span>g</span></div><div class="mac-label">Carbs</div></div>
+    <div class="mac-chip"><div class="mac-val">48<span>g</span></div><div class="mac-label">Fat</div></div>
+  </div>
+</div>
+
+<div class="tabs-outer">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)"><div class="dot"></div>Mode A<br><span style="font-size:9px;color:var(--green)">No Calcium</span></button>
+    <button class="tab" onclick="switchTab(1)"><div class="dot"></div>Mode B<br><span style="font-size:9px;color:var(--blue)">With Calcium</span></button>
+    <button class="tab" onclick="switchTab(2)"><div class="dot"></div>Supplements<br><span style="font-size:9px">Schedule</span></button>
+    <button class="tab" onclick="switchTab(3)"><div class="dot"></div>Rules<br><span style="font-size:9px">Absorption</span></button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════════ MODE A -->
+<div class="panel active" id="p0">
+
+  <div class="mode-hdr">
+    <div class="m-icon">🟢</div>
+    <div class="m-info">
+      <div class="m-pill pill-a">Current Mode — Active Now</div>
+      <div class="m-name">Mode A — Without Calcium</div>
+      <div class="m-desc">Calcium paused for 1 month · Bladder recovery · Zinc + Magnesium reinstated separately</div>
+    </div>
+  </div>
+
+  <div class="alert alert-green"><b>Bladder update:</b> Creatine moved to 2 PM — bladder pain fully resolved. ✅ Keep following this mode until bladder is 100% clear for 2+ weeks, then switch to Mode B.</div>
+
+  <div class="timeline">
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">8:00 AM</span><span class="meal-name">Wake Up</span><span class="meal-badge b-purple">Empty Stomach</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-supp">Probiotic</span><span class="food-amt">5B CFU · 1 capsule</span></div>
+      </div>
+      <div class="meal-note">Take with 1 glass water immediately on waking. Wait 20–30 min before breakfast.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">9:00 AM</span><span class="meal-name">Breakfast</span><span class="meal-badge b-green">Energy Load</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Whole boiled eggs</span><span class="food-amt">3 eggs</span></div>
+        <div class="food-row"><span class="food-name">White rice (dry weight → cook)</span><span class="food-amt">200g</span></div>
+        <div class="food-row"><span class="food-supp">Omega-3 Fish Oil</span><span class="food-amt">1500mg EPA+DHA · 5 min before eating</span></div>
+        <div class="food-row"><span class="food-supp">B-Complex</span><span class="food-amt">1 tablet</span></div>
+        <div class="food-row"><span class="food-supp">Vitamin C</span><span class="food-amt">500mg · first half</span></div>
+        <div class="food-row"><span class="food-supp">Vitamin D3</span><span class="food-amt">1200 IU</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>930</b> kcal</span>
+        <span class="mac-item">Protein <b>32g</b></span>
+        <span class="mac-item">Carbs <b>160g</b></span>
+        <span class="mac-item">Fat <b>16g</b></span>
+      </div>
+      <div class="meal-note">Omega-3 taken 5 min before — absorbs with egg yolk fat. <span class="crit">B-Complex never at night.</span></div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">9:30 AM</span><span class="meal-name">Fiber</span><span class="meal-badge b-gray">After Breakfast</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-supp">Psyllium Husk</span><span class="food-amt">1 serving in glass of water</span></div>
+      </div>
+      <div class="meal-note">Take right after finishing breakfast. <span class="crit">Must be 2+ hrs before Zinc and Magnesium.</span> <span class="ok">✅ Safe here — Zinc is at 9 PM.</span></div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">2:00 PM</span><span class="meal-name">Lunch — Main Fuel</span><span class="meal-badge b-amber">Biggest Meal</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Chicken breast (boil · salt + turmeric)</span><span class="food-amt">350g raw</span></div>
+        <div class="food-row"><span class="food-name">White rice (dry weight → cook)</span><span class="food-amt">250g</span></div>
+        <div class="food-row"><span class="food-supp">Creapure Creatine</span><span class="food-amt">5g · mix in water</span></div>
+        <div class="food-row"><span class="food-supp">Vitamin C</span><span class="food-amt">500mg · second half</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>1285</b> kcal</span>
+        <span class="mac-item">Protein <b>98g</b></span>
+        <span class="mac-item">Carbs <b>198g</b></span>
+        <span class="mac-item">Fat <b>9g</b></span>
+      </div>
+      <div class="meal-note">Creatine at 2 PM confirmed — bladder pain resolved. Take with food always. No calcium conflict in Mode A.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">5:30 PM</span><span class="meal-name">Pre-Workout</span><span class="meal-badge b-purple">45–60 Min Before Gym</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Dates (Medjool or any)</span><span class="food-amt">5+ dates</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>~120</b> kcal</span>
+        <span class="mac-item">Carbs <b>~35g</b></span>
+        <span class="mac-item">Fast carbs for heavy lifts</span>
+      </div>
+      <div class="meal-note">Fast carbs spike energy before squat and deadlift. No protein needed here — lunch protein still active. Eat and go.</div>
+    </div>
+
+    <div class="gym-bar">
+      <div class="gym-dot"></div>
+      <div>
+        <div class="gym-text">Heavy Powerlifting — Squat / Bench / Deadlift</div>
+        <div class="gym-sub">6:30 PM – 8:30 PM &nbsp;·&nbsp; Water only intra-workout &nbsp;·&nbsp; 3.5L daily total</div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">9:00 PM</span><span class="meal-name">Post-Workout Dinner</span><span class="meal-badge b-blue">Recovery Window</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Whole boiled eggs</span><span class="food-amt">2 eggs</span></div>
+        <div class="food-row"><span class="food-name">White rice (dry weight → cook)</span><span class="food-amt">100g</span></div>
+        <div class="food-row"><span class="food-supp">Whey Isolate</span><span class="food-amt">1 scoop · ~25g protein</span></div>
+        <div class="food-row"><span class="food-supp">Zinc Picolinate</span><span class="food-amt">30mg · with food</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>610</b> kcal</span>
+        <span class="mac-item">Protein <b>56g</b></span>
+        <span class="mac-item">Carbs <b>81g</b></span>
+        <span class="mac-item">Fat <b>10g</b></span>
+      </div>
+      <div class="meal-note"><span class="crit">Zinc Picolinate always with food — never empty stomach.</span> Safe here: 7+ hrs away from fiber at 9:30 AM. <span class="ok">✅</span></div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">10:30 PM</span><span class="meal-name">Bedtime</span><span class="meal-badge b-red">30–60 Min Before Sleep</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-supp">Magnesium Glycinate</span><span class="food-amt">440mg elemental · 2 tablets</span></div>
+      </div>
+      <div class="meal-note">Relaxes CNS · deep sleep · GH production · muscle recovery. <span class="crit">Phone down at 10:30 PM.</span> Safe here: 1 hr after Zinc dinner. <span class="ok">✅</span></div>
+    </div>
+
+  </div>
+
+  <div class="w-note border-green"><b>Mode A summary:</b> No calcium = no absorption conflicts. Zinc at dinner + Magnesium at bedtime work perfectly separated. Creatine at 2 PM = bladder stays healthy. Stay on Mode A until bladder fully clear for 2+ weeks.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ MODE B -->
+<div class="panel" id="p1">
+
+  <div class="mode-hdr">
+    <div class="m-icon">🔵</div>
+    <div class="m-info">
+      <div class="m-pill pill-b">Switch After 1 Month</div>
+      <div class="m-name">Mode B — With Calcium</div>
+      <div class="m-desc">Calcium combo tab reinstated at lunch · Zinc + Magnesium separate stopped · Creatine stays at 2 PM</div>
+    </div>
+  </div>
+
+  <div class="alert alert-gold"><b>When to switch:</b> Only move to Mode B after bladder pain is fully gone for 2+ weeks AND you've been off calcium for at least 1 month. Do not rush this.</div>
+  <div class="alert alert-red"><b>Mode B rule:</b> Calcium combo tab already contains Zinc 13.2mg + Magnesium 315mg. Stop separate Zinc Picolinate and Magnesium Glycinate when on Mode B to avoid overdose.</div>
+
+  <div class="timeline">
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">8:00 AM</span><span class="meal-name">Wake Up</span><span class="meal-badge b-purple">Empty Stomach</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-supp">Probiotic</span><span class="food-amt">5B CFU · 1 capsule</span></div>
+      </div>
+      <div class="meal-note">Same as Mode A. 1 glass water. Wait 20–30 min.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">9:00 AM</span><span class="meal-name">Breakfast</span><span class="meal-badge b-green">Energy Load</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Whole boiled eggs</span><span class="food-amt">3 eggs</span></div>
+        <div class="food-row"><span class="food-name">White rice (dry weight → cook)</span><span class="food-amt">200g</span></div>
+        <div class="food-row"><span class="food-supp">Omega-3 Fish Oil</span><span class="food-amt">1500mg · 5 min before eating</span></div>
+        <div class="food-row"><span class="food-supp">B-Complex</span><span class="food-amt">1 tablet</span></div>
+        <div class="food-row"><span class="food-supp">Vitamin C</span><span class="food-amt">500mg · first half</span></div>
+        <div class="food-row"><span class="food-supp">Vitamin D3</span><span class="food-amt">1200 IU</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>930</b> kcal</span>
+        <span class="mac-item">Protein <b>32g</b></span>
+        <span class="mac-item">Carbs <b>160g</b></span>
+        <span class="mac-item">Fat <b>16g</b></span>
+      </div>
+      <div class="meal-note">No Zinc or Magnesium at breakfast in Mode B — calcium combo covers both at lunch.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">9:30 AM</span><span class="meal-name">Fiber</span><span class="meal-badge b-gray">After Breakfast</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-supp">Psyllium Husk</span><span class="food-amt">1 serving in glass of water</span></div>
+      </div>
+      <div class="meal-note"><span class="crit">Critical in Mode B:</span> Fiber must stay 2+ hrs before 2 PM calcium combo. 9:30 AM = 4.5 hrs gap. <span class="ok">✅ Safe.</span></div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">2:00 PM</span><span class="meal-name">Lunch — Main Fuel</span><span class="meal-badge b-amber">Biggest Meal</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Chicken breast (boil · salt + turmeric)</span><span class="food-amt">350g raw</span></div>
+        <div class="food-row"><span class="food-name">White rice (dry weight → cook)</span><span class="food-amt">250g</span></div>
+        <div class="food-row"><span class="food-supp">Calcium Combo Tab</span><span class="food-amt">2 tablets · Ca 600mg + D3 600IU + K2 55mcg + Mg 315mg + Zn 13.2mg</span></div>
+        <div class="food-row"><span class="food-supp">Creapure Creatine</span><span class="food-amt">5g · mix in water</span></div>
+        <div class="food-row"><span class="food-supp">Vitamin C</span><span class="food-amt">500mg · second half</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>1285</b> kcal</span>
+        <span class="mac-item">Protein <b>98g</b></span>
+        <span class="mac-item">Carbs <b>198g</b></span>
+        <span class="mac-item">Fat <b>9g</b></span>
+      </div>
+      <div class="meal-note"><span class="crit">Mode B rule: Stop separate Zinc Picolinate and Magnesium Glycinate.</span> Calcium combo already has both. Taking extra = overdose risk.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">5:30 PM</span><span class="meal-name">Pre-Workout</span><span class="meal-badge b-purple">45–60 Min Before Gym</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Dates</span><span class="food-amt">5+ dates</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>~120</b> kcal</span>
+        <span class="mac-item">Carbs <b>~35g</b></span>
+      </div>
+      <div class="meal-note">Same as Mode A. Fast carbs before heavy lifts.</div>
+    </div>
+
+    <div class="gym-bar">
+      <div class="gym-dot"></div>
+      <div>
+        <div class="gym-text">Heavy Powerlifting — Squat / Bench / Deadlift</div>
+        <div class="gym-sub">6:30 PM – 8:30 PM &nbsp;·&nbsp; Water only &nbsp;·&nbsp; 3.5L daily total</div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">9:00 PM</span><span class="meal-name">Post-Workout Dinner</span><span class="meal-badge b-blue">Recovery Window</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Whole boiled eggs</span><span class="food-amt">2 eggs</span></div>
+        <div class="food-row"><span class="food-name">White rice (dry weight → cook)</span><span class="food-amt">100g</span></div>
+        <div class="food-row"><span class="food-supp">Whey Isolate</span><span class="food-amt">1 scoop · ~25g protein</span></div>
+      </div>
+      <div class="meal-macros">
+        <span class="mac-item"><b>610</b> kcal</span>
+        <span class="mac-item">Protein <b>56g</b></span>
+        <span class="mac-item">Carbs <b>81g</b></span>
+        <span class="mac-item">Fat <b>10g</b></span>
+      </div>
+      <div class="meal-note">No Zinc at dinner in Mode B — calcium combo at lunch covers it. No Magnesium at bedtime either.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head"><span class="meal-time">10:30 PM</span><span class="meal-name">Bedtime</span><span class="meal-badge b-gray">Sleep Protocol</span></div>
+      <div class="meal-body">
+        <div class="food-row"><span class="food-name">Water</span><span class="food-amt">1 glass</span></div>
+      </div>
+      <div class="meal-note">No Magnesium supplement in Mode B — calcium combo already provides 440mg elemental Mg. <span class="crit">Phone down at 10:30 PM.</span></div>
+    </div>
+
+  </div>
+
+  <div class="w-note border-blue"><b>Mode B summary:</b> Calcium combo at 2 PM covers Zinc + Magnesium + D3 + K2 in one shot. Stop all separate Zinc and Magnesium. Creatine stays at 2 PM always. Switch back to Mode A immediately if bladder pain returns.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SUPPLEMENTS -->
+<div class="panel" id="p2">
+  <div class="mode-hdr">
+    <div class="m-icon">💊</div>
+    <div class="m-info">
+      <div class="m-pill pill-a">Both Modes</div>
+      <div class="m-name">Full Supplement Schedule</div>
+      <div class="m-desc">Mode A and Mode B side by side · confirmed dosages from your labels</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Mode A — No Calcium (Current)</div>
+  <div class="supp-grid">
+    <div class="supp-card">
+      <div class="supp-time">8:00 AM — Empty Stomach</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Probiotic</div><div class="supp-dose">5 Billion CFU · 1 capsule</div><div class="supp-note-text">With water · 20 min before breakfast</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">9:00 AM — With Breakfast</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Omega-3</div><div class="supp-dose">1500mg EPA+DHA · 5 min before eating</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">B-Complex</div><div class="supp-dose">1 tablet · never at night</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Vitamin C</div><div class="supp-dose">500mg · first half</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Vitamin D3</div><div class="supp-dose">1200 IU</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">2:00 PM — With Lunch</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Creapure Creatine</div><div class="supp-dose">5g in water · with food</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Vitamin C</div><div class="supp-dose">500mg · second half</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">9:00 PM — With Dinner</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Zinc Picolinate</div><div class="supp-dose">30mg · always with food</div><div class="supp-note-text">Mode A only — stop when switching to Mode B</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">10:30 PM — Before Sleep</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Magnesium Glycinate</div><div class="supp-dose">440mg elemental · 2 tablets</div><div class="supp-note-text">Mode A only — stop when switching to Mode B</div></div></div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:10px;margin-top:20px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Mode B — With Calcium (After 1 Month)</div>
+  <div class="supp-grid">
+    <div class="supp-card">
+      <div class="supp-time">8:00 AM — Empty Stomach</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Probiotic</div><div class="supp-dose">5B CFU · same as Mode A</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">9:00 AM — With Breakfast</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Omega-3 · B-Complex · Vitamin C (500mg) · D3</div><div class="supp-dose">Same as Mode A</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">2:00 PM — With Lunch</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Calcium Combo Tab</div><div class="supp-dose">2 tablets · Ca+D3+K2+Mg+Zn</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Creapure Creatine</div><div class="supp-dose">5g in water</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Vitamin C</div><div class="supp-dose">500mg · second half</div></div></div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-time">9:00 PM & 10:30 PM</div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Zinc Picolinate</div><div class="supp-dose" style="color:var(--red)">❌ STOP — calcium combo covers it</div></div></div>
+      <div class="supp-item"><div class="supp-dot"></div><div class="supp-detail"><div class="supp-name">Magnesium Glycinate</div><div class="supp-dose" style="color:var(--red)">❌ STOP — calcium combo covers it</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ RULES -->
+<div class="panel" id="p3">
+  <div class="mode-hdr">
+    <div class="m-icon">⚠️</div>
+    <div class="m-info">
+      <div class="m-pill pill-a">Always Apply</div>
+      <div class="m-name">Absorption Rules</div>
+      <div class="m-desc">Break these rules = supplements don't work · follow them = maximum benefit</div>
+    </div>
+  </div>
+
+  <div class="rules-grid">
+    <div class="rule-card" style="border-color:rgba(230,57,70,.3)">
+      <div class="rule-title rt-red">❌ Never Combine</div>
+      <div class="rule-item">· Calcium + Zinc (same time)</div>
+      <div class="rule-item">· Calcium + Magnesium (same time)</div>
+      <div class="rule-item">· Fiber within 2 hrs of any mineral</div>
+      <div class="rule-item">· B-Complex at night</div>
+      <div class="rule-item">· Omega-3 on empty stomach</div>
+    </div>
+    <div class="rule-card" style="border-color:rgba(46,204,113,.3)">
+      <div class="rule-title rt-green">✅ Always With Food</div>
+      <div class="rule-item">· Calcium (lunch)</div>
+      <div class="rule-item">· Zinc Picolinate (dinner)</div>
+      <div class="rule-item">· Omega-3 (breakfast — with egg fat)</div>
+      <div class="rule-item">· Vitamin D3 (breakfast)</div>
+      <div class="rule-item">· Creatine (lunch — with food)</div>
+    </div>
+    <div class="rule-card" style="border-color:rgba(58,134,255,.3)">
+      <div class="rule-title rt-blue">💧 Water Rules</div>
+      <div class="rule-item">· 3.5L daily total target</div>
+      <div class="rule-item">· 1 glass at wake up with probiotic</div>
+      <div class="rule-item">· 1 bottle during office hours</div>
+      <div class="rule-item">· 1 bottle during workout</div>
+      <div class="rule-item">· Stop large intake 2 hrs before bed</div>
+    </div>
+    <div class="rule-card" style="border-color:rgba(244,162,97,.3)">
+      <div class="rule-title rt-gold">🌙 Sleep Rules</div>
+      <div class="rule-item">· Phone down at 10:30 PM always</div>
+      <div class="rule-item">· Never hold urine at night</div>
+      <div class="rule-item">· Sleep by 11 PM</div>
+      <div class="rule-item">· 8 hrs minimum for GH production</div>
+      <div class="rule-item">· Muscle grows during sleep not gym</div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px;margin-bottom:10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Quick daily reference</div>
+  <div class="summary">
+    <div class="summary-item"><div class="s-icon">🥚</div><div class="s-text"><b>Eggs/day:</b> 5 total — 3 breakfast · 2 dinner</div></div>
+    <div class="summary-item"><div class="s-icon">🍚</div><div class="s-text"><b>Rice/day:</b> 550g dry — 200g breakfast · 250g lunch · 100g dinner</div></div>
+    <div class="summary-item"><div class="s-icon">🐔</div><div class="s-text"><b>Chicken:</b> 350g raw · boil with salt + turmeric · buy fresh daily</div></div>
+    <div class="summary-item"><div class="s-icon">🌴</div><div class="s-text"><b>Dates:</b> 5+ at 5:30 PM pre-workout · fast carbs for heavy lifts</div></div>
+    <div class="summary-item"><div class="s-icon">⚖️</div><div class="s-text"><b>Weigh yourself:</b> Every Monday morning · after waking · before eating</div></div>
+    <div class="summary-item"><div class="s-icon">📈</div><div class="s-text"><b>Target:</b> +0.5 kg/month · 75kg → 85kg in ~18–20 months lean and clean</div></div>
+    <div class="summary-item"><div class="s-icon">🚽</div><div class="s-text"><b>Bladder rule:</b> Never hold urine at night — get up and go always</div></div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">Mode A · Mode B · Supplements · Rules &nbsp;·&nbsp; ShaHab Nutrition Plan 2026</div>
+
+<script>
+function switchTab(idx){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)<50)return;
+  const cur=[...document.querySelectorAll('.panel')].findIndex(p=>p.classList.contains('active'));
+  if(dx<0&&cur<3)switchTab(cur+1);
+  if(dx>0&&cur>0)switchTab(cur-1);
+},{passive:true});
+</script>
+</body>
+</html>
