@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShaHab — 8-Week Program</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--surface:#141414;--card:#1a1a1a;--border:#252525;
+  --red:#e63946;--blue:#3a86ff;--green:#2ecc71;--gold:#f4a261;--gray:#666;
+  --white:#efefef;--muted:#666;--label:#999;
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+/* HERO */
+.hero{background:var(--surface);border-bottom:2px solid var(--red);padding:36px 20px 28px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'SBD';position:absolute;font-size:220px;font-weight:900;color:rgba(230,57,70,.04);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;letter-spacing:-8px;white-space:nowrap}
+.hero-tag{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.hero h1{font-size:clamp(26px,6vw,56px);font-weight:900;letter-spacing:-1px;margin-bottom:6px;text-transform:uppercase}
+.hero h1 span{color:var(--red)}
+.hero-sub{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.maxes{display:flex;justify-content:center;gap:2px;margin-top:20px;flex-wrap:wrap}
+.max-chip{background:var(--card);border:1px solid var(--border);padding:10px 18px;text-align:center}
+.max-chip:first-child{border-radius:6px 0 0 6px}
+.max-chip:last-child{border-radius:0 6px 6px 0}
+.max-val{font-size:22px;font-weight:900;color:var(--white);line-height:1}
+.max-val span{font-size:13px;color:var(--red)}
+.max-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* TABS */
+.tabs-outer{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border)}
+.tabs{display:flex;max-width:920px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:72px;padding:10px 6px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap;text-align:center}
+.tab:hover{color:var(--white)}
+.tab.active{border-bottom-color:currentColor}
+.tab[data-phase="hyp"]{color:var(--muted)}.tab[data-phase="hyp"].active{color:var(--blue)}
+.tab[data-phase="str"]{color:var(--muted)}.tab[data-phase="str"].active{color:var(--red)}
+.tab[data-phase="del"]{color:var(--muted)}.tab[data-phase="del"].active{color:var(--gray)}
+.tab[data-phase="peak"]{color:var(--muted)}.tab[data-phase="peak"].active{color:var(--gold)}
+.tab[data-phase="max"]{color:var(--muted)}.tab[data-phase="max"].active{color:var(--green)}
+.tab .dot{width:5px;height:5px;border-radius:50%;margin:0 auto 4px;background:currentColor;opacity:.4}
+.tab.active .dot{opacity:1}
+
+/* MAIN */
+.main{max-width:920px;margin:0 auto;padding:24px 14px 60px}
+.week-panel{display:none}
+.week-panel.active{display:block}
+
+/* WEEK HEADER */
+.week-hdr{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.w-num{font-size:68px;font-weight:900;line-height:1;letter-spacing:-4px;opacity:.12;flex-shrink:0}
+.w-num.c-blue{color:var(--blue)}.w-num.c-red{color:var(--red)}.w-num.c-gray{color:#aaa}.w-num.c-gold{color:var(--gold)}.w-num.c-green{color:var(--green)}
+.w-info{flex:1;padding-top:6px}
+.phase-pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.pill-hyp{background:rgba(58,134,255,.12);color:var(--blue);border:1px solid rgba(58,134,255,.25)}
+.pill-str{background:rgba(230,57,70,.12);color:var(--red);border:1px solid rgba(230,57,70,.25)}
+.pill-del{background:rgba(100,100,100,.12);color:#888;border:1px solid rgba(100,100,100,.2)}
+.pill-peak{background:rgba(244,162,97,.12);color:var(--gold);border:1px solid rgba(244,162,97,.25)}
+.pill-max{background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.25)}
+.w-name{font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.w-desc{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* SESSIONS */
+.sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:16px}
+.s-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.s-head{background:var(--surface);padding:9px 13px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.s-day{font-size:17px;font-weight:900;color:var(--red);letter-spacing:1px;min-width:38px;text-transform:uppercase}
+.s-info .s-name{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--label)}
+.s-info .s-focus{font-size:11px;color:var(--muted);margin-top:1px}
+.s-body{padding:10px 13px}
+.ex{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.ex:last-child{border:none;padding-bottom:0}
+.ex-l{flex:1}
+.ex-n{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--white)}
+.ex-t{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.t-pri{color:var(--red)}.t-sec{color:var(--blue)}.t-acc{color:#777}.t-vol{color:var(--gold)}.t-fix{color:var(--green)}
+.ex-nt{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic}
+.ex-r{text-align:right;flex-shrink:0;margin-left:10px}
+.ex-w{font-size:19px;font-weight:900;color:var(--red);line-height:1}
+.ex-s{font-size:11px;color:var(--label);letter-spacing:.5px;margin-top:2px}
+
+/* WEEK NOTE */
+.w-note{background:var(--surface);border:1px solid var(--border);border-radius:0 6px 6px 0;padding:11px 15px;font-size:12px;color:var(--label);line-height:1.6;margin-top:2px}
+.w-note b{color:var(--white)}
+.border-blue{border-left:3px solid var(--blue)}.border-red{border-left:3px solid var(--red)}.border-gray{border-left:3px solid #444}.border-gold{border-left:3px solid var(--gold)}.border-green{border-left:3px solid var(--green)}
+
+/* MAX TEST */
+.max-section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;margin-top:16px}
+.max-lift-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.max-lift-head{background:rgba(46,204,113,.08);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.max-lift-name{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:1px}
+.max-lift-target{font-size:12px;color:var(--green);font-weight:700}
+.max-lift-body{padding:10px 14px}
+.attempt{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.attempt:last-child{border:none}
+.a-num{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);min-width:70px}
+.a-kg{font-size:16px;font-weight:800;color:var(--white);flex:1}
+.a-note{font-size:11px;color:var(--muted)}
+.attempt.is-max .a-num{color:var(--green)}.attempt.is-max .a-kg{color:var(--green)}
+
+/* REST BAR */
+.rest-bar{background:var(--surface);border:1px dashed var(--border);border-radius:8px;padding:14px;text-align:center;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+
+/* REST SESSIONS */
+.rest-session{background:var(--surface);border:1px dashed var(--border);border-radius:8px;padding:20px 14px;text-align:center;color:var(--muted);font-size:13px}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;color:var(--muted);font-size:11px;letter-spacing:1px;border-top:1px solid var(--border)}
+
+@media(max-width:520px){
+  .sessions{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .maxes{gap:1px}
+  .max-chip{padding:8px 12px}
+  .w-num{font-size:52px}
+  .w-name{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">8-Week Powerlifter Program · 2026</div>
+  <h1>Shaha<span>b</span></h1>
+  <div class="hero-sub">Squat · Bench · Deadlift · Strength + Lean Muscle</div>
+  <div class="maxes">
+    <div class="max-chip"><div class="max-val">170<span>kg</span></div><div class="max-label">Squat</div></div>
+    <div class="max-chip"><div class="max-val">120<span>kg</span></div><div class="max-label">Bench</div></div>
+    <div class="max-chip"><div class="max-val">180<span>kg</span></div><div class="max-label">Deadlift</div></div>
+    <div class="max-chip"><div class="max-val">470<span>kg</span></div><div class="max-label">Total</div></div>
+  </div>
+</div>
+
+<div class="tabs-outer">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="main" id="main"></div>
+
+<div class="footer">Sun · Tue · Thu · Fri &nbsp;·&nbsp; 4 Days/Week &nbsp;·&nbsp; 90 Min Sessions &nbsp;·&nbsp; ShaHab 2026</div>
+
+<script>
+const W = [
+  // ── WEEK 1 ──────────────────────────────────────────────────────────
+  {num:1,name:"Hypertrophy Base",phase:"hyp",rpe:"RPE 7",desc:"65% of max · Muscle foundation · Light CNS load · Get used to the volume",
+   note:"<b>First week back.</b> Focus on form and feel every rep. Do NOT push beyond RPE 7 — this is intentional. The weight will feel light. That is the point. Save energy for Week 2 overload.",
+   sessions:[
+    {day:"SUN",focus:"Squat Primary",exs:[
+      {n:"Back Squat",t:"pri",s:"4×8",w:"110 kg"},
+      {n:"Bench Press",t:"sec",s:"3×8",w:"65 kg"},
+      {n:"Leg Press",t:"acc",s:"4×10",w:"120 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×12",w:"30 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift Primary",exs:[
+      {n:"Deficit Deadlift",t:"fix",s:"3×5",w:"100 kg",nt:"3-inch deficit · floor pull fix ⚡"},
+      {n:"Conventional Deadlift",t:"pri",s:"4×6",w:"117.5 kg"},
+      {n:"RDL",t:"acc",s:"3×10",w:"85 kg",nt:"3-sec negative"},
+      {n:"Lat Pulldown",t:"acc",s:"3×12",w:"70 kg"},
+    ]},
+    {day:"THU",focus:"Bench Primary",exs:[
+      {n:"Bench Press",t:"pri",s:"4×8",w:"77.5 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×8",w:"57.5 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×10",w:"75 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×15",w:"20 kg"},
+    ]},
+    {day:"FRI",focus:"Volume — All 3",exs:[
+      {n:"Back Squat",t:"vol",s:"3×8",w:"100 kg"},
+      {n:"Deadlift",t:"vol",s:"3×6",w:"107.5 kg"},
+      {n:"Bench Press",t:"vol",s:"3×8",w:"70 kg"},
+      {n:"Bicep Curl",t:"acc",s:"3×12",w:"27.5 kg"},
+      {n:"Rear Delt Fly",t:"acc",s:"3×15",w:"12.5 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 2 ──────────────────────────────────────────────────────────
+  {num:2,name:"Hypertrophy Load",phase:"hyp",rpe:"RPE 7.5",desc:"70% of max · Progressive volume · Push slightly harder",
+   note:"<b>Add weight from Week 1.</b> Still hypertrophy — reps and sets same, load goes up. You should feel RPE 7.5 on the last set. If it feels easy, add 2.5kg.",
+   sessions:[
+    {day:"SUN",focus:"Squat Primary",exs:[
+      {n:"Back Squat",t:"pri",s:"4×8",w:"120 kg"},
+      {n:"Bench Press",t:"sec",s:"3×8",w:"70 kg"},
+      {n:"Leg Press",t:"acc",s:"4×10",w:"130 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×12",w:"32.5 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift Primary",exs:[
+      {n:"Deficit Deadlift",t:"fix",s:"3×5",w:"107.5 kg",nt:"3-inch deficit · floor pull fix ⚡"},
+      {n:"Conventional Deadlift",t:"pri",s:"4×6",w:"125 kg"},
+      {n:"RDL",t:"acc",s:"3×10",w:"90 kg",nt:"3-sec negative"},
+      {n:"Lat Pulldown",t:"acc",s:"3×12",w:"75 kg"},
+    ]},
+    {day:"THU",focus:"Bench Primary",exs:[
+      {n:"Bench Press",t:"pri",s:"4×8",w:"82.5 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×8",w:"62.5 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×10",w:"80 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×15",w:"22.5 kg"},
+    ]},
+    {day:"FRI",focus:"Volume — All 3",exs:[
+      {n:"Back Squat",t:"vol",s:"3×8",w:"107.5 kg"},
+      {n:"Deadlift",t:"vol",s:"3×6",w:"115 kg"},
+      {n:"Bench Press",t:"vol",s:"3×8",w:"75 kg"},
+      {n:"Bicep Curl",t:"acc",s:"3×12",w:"30 kg"},
+      {n:"Rear Delt Fly",t:"acc",s:"3×15",w:"15 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 3 ──────────────────────────────────────────────────────────
+  {num:3,name:"Strength Block",phase:"str",rpe:"RPE 8.5",desc:"82% of max · Heavy load · Low reps · CNS activation",
+   note:"<b>Shift to strength.</b> Reps drop, weight goes up significantly. Rest 3–4 min between main lift sets. No rushing. The deficit deadlift is removed this week — save the CNS for heavy main sets.",
+   sessions:[
+    {day:"SUN",focus:"Squat Primary",exs:[
+      {n:"Back Squat",t:"pri",s:"5×4",w:"140 kg"},
+      {n:"Bench Press",t:"sec",s:"3×5",w:"82.5 kg"},
+      {n:"Leg Press",t:"acc",s:"4×8",w:"150 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×10",w:"37.5 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift Primary",exs:[
+      {n:"Conventional Deadlift",t:"pri",s:"5×3",w:"147.5 kg"},
+      {n:"Barbell Row",t:"sec",s:"4×6",w:"90 kg"},
+      {n:"RDL",t:"acc",s:"3×8",w:"100 kg"},
+      {n:"Lat Pulldown",t:"acc",s:"3×10",w:"80 kg"},
+    ]},
+    {day:"THU",focus:"Bench Primary",exs:[
+      {n:"Bench Press",t:"pri",s:"5×4",w:"97.5 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×5",w:"70 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×8",w:"85 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×12",w:"25 kg"},
+    ]},
+    {day:"FRI",focus:"Volume — All 3",exs:[
+      {n:"Back Squat",t:"vol",s:"3×6",w:"120 kg"},
+      {n:"Deadlift",t:"vol",s:"3×5",w:"130 kg"},
+      {n:"Bench Press",t:"vol",s:"3×6",w:"85 kg"},
+      {n:"Bicep Curl",t:"acc",s:"3×10",w:"32.5 kg"},
+      {n:"Rear Delt Fly",t:"acc",s:"3×12",w:"17.5 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 4 ──────────────────────────────────────────────────────────
+  {num:4,name:"Deload",phase:"del",rpe:"RPE 5–6",desc:"60% of max · CNS reset · Full recovery · Sleep and eat well",
+   note:"<b>Deload is not optional.</b> Do not add weight. Do not push harder. Your body is recovering from 3 heavy weeks. Muscle grows during this week, not during heavy sessions. Sleep, eat, and protect the CNS.",
+   sessions:[
+    {day:"SUN",focus:"Squat — Light",exs:[
+      {n:"Back Squat",t:"pri",s:"3×5",w:"100 kg"},
+      {n:"Bench Press",t:"sec",s:"3×5",w:"65 kg"},
+      {n:"Leg Press",t:"acc",s:"3×8",w:"100 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×12",w:"25 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift — Light",exs:[
+      {n:"Conventional Deadlift",t:"pri",s:"3×5",w:"107.5 kg"},
+      {n:"RDL",t:"acc",s:"3×8",w:"75 kg"},
+      {n:"Lat Pulldown",t:"acc",s:"3×10",w:"65 kg"},
+    ]},
+    {day:"THU",focus:"Bench — Light",exs:[
+      {n:"Bench Press",t:"pri",s:"3×5",w:"72.5 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×5",w:"55 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×8",w:"70 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×12",w:"20 kg"},
+    ]},
+    {day:"FRI",focus:"Technique Only",exs:[
+      {n:"Back Squat",t:"vol",s:"3×5",w:"90 kg"},
+      {n:"Deadlift",t:"vol",s:"3×5",w:"100 kg"},
+      {n:"Bench Press",t:"vol",s:"3×5",w:"65 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 5 ──────────────────────────────────────────────────────────
+  {num:5,name:"Hypertrophy — Block 2",phase:"hyp",rpe:"RPE 7.5",desc:"73% of max · Heavier hypertrophy · Fewer reps than Block 1",
+   note:"<b>Block 2 starts.</b> Hypertrophy again but heavier than Week 1–2. Reps drop slightly (6 instead of 8) but weight goes up. Deficit deadlift returns to fix the floor pull. You should feel stronger from Block 1.",
+   sessions:[
+    {day:"SUN",focus:"Squat Primary",exs:[
+      {n:"Back Squat",t:"pri",s:"4×6",w:"125 kg"},
+      {n:"Bench Press",t:"sec",s:"3×6",w:"72.5 kg"},
+      {n:"Leg Press",t:"acc",s:"4×10",w:"140 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×12",w:"35 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift Primary",exs:[
+      {n:"Deficit Deadlift",t:"fix",s:"3×4",w:"112.5 kg",nt:"3-inch deficit · floor pull fix ⚡"},
+      {n:"Conventional Deadlift",t:"pri",s:"4×5",w:"130 kg"},
+      {n:"RDL",t:"acc",s:"3×8",w:"95 kg",nt:"3-sec negative"},
+      {n:"Lat Pulldown",t:"acc",s:"3×12",w:"77.5 kg"},
+    ]},
+    {day:"THU",focus:"Bench Primary",exs:[
+      {n:"Bench Press",t:"pri",s:"4×6",w:"87.5 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×6",w:"65 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×10",w:"82.5 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×15",w:"22.5 kg"},
+    ]},
+    {day:"FRI",focus:"Volume — All 3",exs:[
+      {n:"Back Squat",t:"vol",s:"3×6",w:"110 kg"},
+      {n:"Deadlift",t:"vol",s:"3×5",w:"120 kg"},
+      {n:"Bench Press",t:"vol",s:"3×6",w:"77.5 kg"},
+      {n:"Bicep Curl",t:"acc",s:"3×12",w:"32.5 kg"},
+      {n:"Rear Delt Fly",t:"acc",s:"3×15",w:"15 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 6 ──────────────────────────────────────────────────────────
+  {num:6,name:"Hypertrophy Peak",phase:"hyp",rpe:"RPE 8",desc:"77% of max · Highest volume week · Push every set hard",
+   note:"<b>Hardest hypertrophy week.</b> This is where muscle is built. Every set should reach RPE 8 on the last rep. Rest 2 min between accessory sets. You will be sore — that is expected and good.",
+   sessions:[
+    {day:"SUN",focus:"Squat Primary",exs:[
+      {n:"Back Squat",t:"pri",s:"4×6",w:"130 kg"},
+      {n:"Bench Press",t:"sec",s:"3×6",w:"77.5 kg"},
+      {n:"Leg Press",t:"acc",s:"4×10",w:"150 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×12",w:"37.5 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift Primary",exs:[
+      {n:"Deficit Deadlift",t:"fix",s:"3×4",w:"120 kg",nt:"3-inch deficit · floor pull fix ⚡"},
+      {n:"Conventional Deadlift",t:"pri",s:"4×5",w:"140 kg"},
+      {n:"RDL",t:"acc",s:"3×8",w:"100 kg",nt:"3-sec negative"},
+      {n:"Lat Pulldown",t:"acc",s:"3×12",w:"80 kg"},
+    ]},
+    {day:"THU",focus:"Bench Primary",exs:[
+      {n:"Bench Press",t:"pri",s:"4×6",w:"92.5 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×6",w:"67.5 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×10",w:"87.5 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×15",w:"25 kg"},
+    ]},
+    {day:"FRI",focus:"Volume — All 3",exs:[
+      {n:"Back Squat",t:"vol",s:"3×6",w:"117.5 kg"},
+      {n:"Deadlift",t:"vol",s:"3×5",w:"127.5 kg"},
+      {n:"Bench Press",t:"vol",s:"3×6",w:"82.5 kg"},
+      {n:"Bicep Curl",t:"acc",s:"3×12",w:"35 kg"},
+      {n:"Rear Delt Fly",t:"acc",s:"3×15",w:"17.5 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 7 ──────────────────────────────────────────────────────────
+  {num:7,name:"Peak Strength",phase:"peak",rpe:"RPE 9",desc:"88% of max · Heavy singles prep · Low reps · Maximum CNS activation",
+   note:"<b>Final heavy week before max test.</b> Rest 4 min between all main lift sets. No failure — every rep should be powerful and controlled. Eat extra carbs this week. Sleep 8+ hrs. Your CNS needs to be fresh for Week 8.",
+   sessions:[
+    {day:"SUN",focus:"Squat Heavy",exs:[
+      {n:"Back Squat",t:"pri",s:"5×3",w:"150 kg"},
+      {n:"Bench Press",t:"sec",s:"3×3",w:"90 kg"},
+      {n:"Leg Press",t:"acc",s:"3×8",w:"160 kg"},
+      {n:"Tricep Pushdown",t:"acc",s:"3×10",w:"40 kg"},
+    ]},
+    {day:"TUE",focus:"Deadlift Heavy",exs:[
+      {n:"Conventional Deadlift",t:"pri",s:"4×2",w:"157.5 kg"},
+      {n:"Barbell Row",t:"sec",s:"4×5",w:"95 kg"},
+      {n:"RDL",t:"acc",s:"3×6",w:"107.5 kg"},
+      {n:"Lat Pulldown",t:"acc",s:"3×10",w:"82.5 kg"},
+    ]},
+    {day:"THU",focus:"Bench Heavy",exs:[
+      {n:"Bench Press",t:"pri",s:"5×3",w:"105 kg"},
+      {n:"Overhead Press",t:"sec",s:"3×3",w:"72.5 kg"},
+      {n:"Barbell Row",t:"acc",s:"3×8",w:"90 kg"},
+      {n:"Face Pulls",t:"acc",s:"3×12",w:"27.5 kg"},
+    ]},
+    {day:"FRI",focus:"Volume — Prep",exs:[
+      {n:"Back Squat",t:"vol",s:"3×4",w:"130 kg"},
+      {n:"Deadlift",t:"vol",s:"3×3",w:"140 kg"},
+      {n:"Bench Press",t:"vol",s:"3×4",w:"95 kg"},
+      {n:"Bicep Curl",t:"acc",s:"3×10",w:"37.5 kg"},
+      {n:"Rear Delt Fly",t:"acc",s:"3×12",w:"20 kg"},
+    ]},
+  ]},
+
+  // ── WEEK 8 ──────────────────────────────────────────────────────────
+  {num:8,name:"Max Test Week",phase:"max",rpe:"100%",desc:"Test new 1RM on all 3 lifts · One max attempt per lift · Record new maxes",
+   note:"<b>Max test protocol.</b> Warm up properly before each max attempt. Never miss a lift — if you're not sure, take the lighter attempt first. Rest 5 min before your max attempt. Sun = Squat, Tue = Deadlift, Thu = Bench. Friday = full rest.",
+   isMax:true,
+   maxTests:[
+    {lift:"Back Squat",target:"Target: 175–182.5 kg",attempts:[
+      {label:"Warm-up",kg:"60 kg",note:"× 5 reps"},
+      {label:"Warm-up",kg:"100 kg",note:"× 3 reps"},
+      {label:"Warm-up",kg:"132.5 kg",note:"× 2 reps"},
+      {label:"Opener",kg:"152.5 kg",note:"× 1 rep · should feel easy"},
+      {label:"2nd Attempt",kg:"162.5 kg",note:"× 1 rep · RPE 9"},
+      {label:"MAX",kg:"170–182.5 kg",note:"× 1 rep · new max",isMax:true},
+    ]},
+    {lift:"Conventional Deadlift",target:"Target: 185–192.5 kg",attempts:[
+      {label:"Warm-up",kg:"70 kg",note:"× 5 reps"},
+      {label:"Warm-up",kg:"110 kg",note:"× 3 reps"},
+      {label:"Warm-up",kg:"145 kg",note:"× 2 reps"},
+      {label:"Opener",kg:"162.5 kg",note:"× 1 rep · should feel easy"},
+      {label:"2nd Attempt",kg:"175 kg",note:"× 1 rep · RPE 9"},
+      {label:"MAX",kg:"182.5–192.5 kg",note:"× 1 rep · new max",isMax:true},
+    ]},
+    {lift:"Bench Press",target:"Target: 125–130 kg",attempts:[
+      {label:"Warm-up",kg:"50 kg",note:"× 5 reps"},
+      {label:"Warm-up",kg:"80 kg",note:"× 3 reps"},
+      {label:"Warm-up",kg:"100 kg",note:"× 2 reps"},
+      {label:"Opener",kg:"112.5 kg",note:"× 1 rep · should feel easy"},
+      {label:"2nd Attempt",kg:"120 kg",note:"× 1 rep · RPE 9"},
+      {label:"MAX",kg:"125–130 kg",note:"× 1 rep · new max",isMax:true},
+    ]},
+   ],
+   sessions:[
+    {day:"SUN",focus:"Squat Max Test"},
+    {day:"TUE",focus:"Deadlift Max Test"},
+    {day:"THU",focus:"Bench Max Test"},
+    {day:"FRI",focus:"Full Rest"},
+   ]
+  },
+];
+
+const phaseColor = {hyp:'blue',str:'red',del:'gray',peak:'gold',max:'green'};
+const phasePill  = {hyp:'Hypertrophy',str:'Strength',del:'Deload',peak:'Peak',max:'Max Test'};
+const pillClass  = {hyp:'pill-hyp',str:'pill-str',del:'pill-del',peak:'pill-peak',max:'pill-max'};
+const tagClass   = {pri:'t-pri',sec:'t-sec',acc:'t-acc',vol:'t-vol',fix:'t-fix'};
+const tagLabel   = {pri:'Primary',sec:'Secondary',acc:'Accessory',vol:'Volume',fix:'Floor Fix ⚡'};
+
+// Build tabs
+const tabsEl = document.getElementById('tabs');
+W.forEach((w,i)=>{
+  const btn = document.createElement('button');
+  btn.className = 'tab'+(i===0?' active':'');
+  btn.dataset.phase = w.phase;
+  btn.innerHTML = `<div class="dot"></div>WK ${w.num}`;
+  btn.onclick = ()=>switchWeek(i);
+  tabsEl.appendChild(btn);
+});
+
+// Build panels
+const mainEl = document.getElementById('main');
+W.forEach((w,i)=>{
+  const div = document.createElement('div');
+  div.className = 'week-panel'+(i===0?' active':'');
+  div.id = 'w'+i;
+
+  if(w.isMax){
+    div.innerHTML = `
+      <div class="week-hdr">
+        <div class="w-num c-${phaseColor[w.phase]}">${String(w.num).padStart(2,'0')}</div>
+        <div class="w-info">
+          <div class="phase-pill ${pillClass[w.phase]}">${phasePill[w.phase]}</div>
+          <div class="w-name">${w.name}</div>
+          <div class="w-desc">${w.rpe} · ${w.desc}</div>
+        </div>
+      </div>
+      <div class="sessions" style="grid-template-columns:repeat(4,minmax(120px,1fr))">
+        ${w.sessions.map(s=>`
+          <div class="s-card">
+            <div class="s-head">
+              <div class="s-day">${s.day}</div>
+              <div class="s-info"><div class="s-name">${s.day==='FRI'?'Rest':'Max Test'}</div><div class="s-focus">${s.focus}</div></div>
+            </div>
+            <div class="s-body" style="font-size:12px;color:var(--muted);padding:14px;text-align:center">
+              ${s.day==='FRI'?'Full rest. No lifting. Walk, sleep, eat.':'Work up to new 1RM. See protocol below.'}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="max-section-title">Max Test Protocol — Attempt by Attempt</div>
+      ${w.maxTests.map(mt=>`
+        <div class="max-lift-card">
+          <div class="max-lift-head">
+            <div class="max-lift-name">${mt.lift}</div>
+            <div class="max-lift-target">${mt.target}</div>
+          </div>
+          <div class="max-lift-body">
+            ${mt.attempts.map(a=>`
+              <div class="attempt${a.isMax?' is-max':''}">
+                <div class="a-num">${a.label}</div>
+                <div class="a-kg">${a.kg}</div>
+                <div class="a-note">${a.note}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+      <div class="w-note border-green">${w.note}</div>
+    `;
+  } else {
+    div.innerHTML = `
+      <div class="week-hdr">
+        <div class="w-num c-${phaseColor[w.phase]}">${String(w.num).padStart(2,'0')}</div>
+        <div class="w-info">
+          <div class="phase-pill ${pillClass[w.phase]}">${phasePill[w.phase]}</div>
+          <div class="w-name">${w.name}</div>
+          <div class="w-desc">${w.rpe} · ${w.desc}</div>
+        </div>
+      </div>
+      <div class="sessions">
+        ${w.sessions.map(s=>`
+          <div class="s-card">
+            <div class="s-head">
+              <div class="s-day">${s.day}</div>
+              <div class="s-info"><div class="s-name">Training Day</div><div class="s-focus">${s.focus}</div></div>
+            </div>
+            <div class="s-body">
+              ${s.exs.map(e=>`
+                <div class="ex">
+                  <div class="ex-l">
+                    <div class="ex-n">${e.n}</div>
+                    <div class="ex-t ${tagClass[e.t]}">${tagLabel[e.t]}</div>
+                    ${e.nt?`<div class="ex-nt">${e.nt}</div>`:''}
+                  </div>
+                  <div class="ex-r">
+                    <div class="ex-w">${e.w}</div>
+                    <div class="ex-s">${e.s}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="w-note border-${phaseColor[w.phase]}">${w.note}</div>
+    `;
+  }
+
+  mainEl.appendChild(div);
+});
+
+function switchWeek(idx){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.week-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Swipe support
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)<50)return;
+  const cur=[...document.querySelectorAll('.week-panel')].findIndex(p=>p.classList.contains('active'));
+  if(dx<0&&cur<W.length-1)switchWeek(cur+1);
+  if(dx>0&&cur>0)switchWeek(cur-1);
+},{passive:true});
+</script>
+</body>
+</html>
